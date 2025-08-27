@@ -1,0 +1,22 @@
+mkdir my-electron-app
+cd my-electron-app
+npm init -y
+# Electron
+npm install --save-dev electron
+
+# Puppeteer (browser automation)
+npm install puppeteer
+
+# for windows Credential vault
+npm install keytar
+
+# for electron store vault
+npm install electron-store keytar
+
+# Child process utils (built-in with Node, but cross-spawn is safer on Windows)
+npm install cross-spawn
+
+# setup package.JSON
+"main": "main.js",
+"scripts": {
+  "start": "electron ."

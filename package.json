@@ -1,0 +1,22 @@
+{
+  "name": "electroncircana",
+  "version": "1.0.0",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "electron ."
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "electron": "^37.3.1"
+  },
+  "dependencies": {
+    "cross-spawn": "^7.0.6",
+    "electron-store": "^10.1.0",
+    "keytar": "^7.9.0",
+    "puppeteer": "^24.17.0"
+  }
+}

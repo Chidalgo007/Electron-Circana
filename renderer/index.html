@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Automation Tool</title>
+    <link rel="stylesheet" href="../src/styles.css" />
+  </head>
+  <body>
+    <div class="tabs">
+      <button
+        class="dashTab"
+        tabid="Circana Dashboard"
+        onclick="openTab('Circana Dashboard')"
+      >
+        Circana Dashboard
+      </button>
+      <button
+        class="excelTab"
+        tabid="Circan Pivot"
+        onclick="openTab('Circan Pivot')"
+      >
+        Circana Pivot
+      </button>
+      <button
+        class="scheduleTab"
+        tabid="schedule"
+        onclick="openTab('schedule')"
+      >
+        Schedule
+      </button>
+      <button
+        class="configTab"
+        tabid="config"
+        id="configBtn"
+        onclick="openTab('config')"
+      >
+        ⚙️
+      </button>
+    </div>
+    <!-- circana Dashboard tab -->
+    <div id="Circana Dashboard" class="tabcontent container">
+      <h2>Circana Dashboard</h2>
+      <!-- checkbox to run excel after automation -->
+      <label>
+        <input type="checkbox" id="linkProcess" /> Run "Circana Pivot" After
+        Automation
+      </label>
+      <button onclick="runAutomation()">Run Circana Dashboard</button>
+    </div>
+
+    <!-- circan pivot tab -->
+    <div id="Circan Pivot" class="tabcontent container">
+      <h3>Excel Processing</h3>
+      <button onclick="runExcel()">Run Circana Pivot Only</button>
+      <button onclick="stopCircanaPivot()">🛑 Stop Circana Pivot</button>
+    </div>
+
+    <!-- config tab -->
+    <div id="config" class="tabcontent config">
+      <h2>Configuration</h2>
+      <label class="w300"
+        >User:
+        <input id="username" type="text" />
+      </label>
+      <label class="w300"
+        >Password:
+        <input id="password" type="password" />
+      </label>
+
+      <label class="w300"
+        >Download Folder: <button id="browseDownload">Browse</button>
+      </label>
+      <input id="downloadInput" type="text" class="wFull" />
+
+      <label class="w300"
+        >Destination File Path:
+        <button id="browseDestination">Browse</button>
+      </label>
+      <input id="destinationInput" type="text" class="wFull" />
+      <label class="w300"
+        >Circana Pivot Excel File Path:
+        <button id="browseExcel">Browse</button>
+      </label>
+      <input id="excelInput" type="text" class="wFull" />
+
+      <button id="saveConfigBtn" class="configBtn">Save</button>
+    </div>
+
+    <!-- schedule tab -->
+    <div id="schedule" class="tabcontent container">
+      <!-- make schedule -->
+      <label>
+        Date:
+        <input type="datetime-local" name="schedule" id="scheduleInput" />
+        <input type="checkbox" id="repeatSchedule" /> Weekly Repeat
+      </label>
+      <label>
+        <input type="radio" name="scheduleType" id="scheduleCircanaDashboard" />
+        Circana Dashboard
+      </label>
+      <label>
+        <input
+          type="radio"
+          name="scheduleType"
+          id="scheduleCircanaDashboardExcel"
+          checked
+        />
+        Circana Dashboard & Circana Pivot.
+      </label>
+      <label>
+        <input type="radio" name="scheduleType" id="scheduleCircanaPivot" />
+        Circana Pivot
+      </label>
+      <button class="schedulebtn" onclick="schedule()">Set Schedule</button>
+      <hr />
+      <!-- view schedule -->
+      <p>Current Schedule</p>
+      <pre id="viewSchedule" class="preSchedule"></pre>
+      <button class="schedulecancel" onclick="cancelSchedule()">
+        Remove Schedules
+      </button>
+    </div>
+
+    <!-- output log box -->
+    <pre id="logBox"></pre>
+
+    <script src="index.js"></script>
+    <script src="renderer.js"></script>
+  </body>
+</html>
