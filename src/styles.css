@@ -8,17 +8,32 @@ body {
   margin: 0;
   padding: 0;
   color: #f0f0f0;
+  overflow: hidden;
 }
 h2 {
   text-align: center;
   margin: 0;
+  padding: 20px;
+}
+h3,
+h4 {
+  text-align: center;
+  margin: 0;
   padding: 0;
 }
-/* tabs */
 
+/* tabs */
+.tabs {
+  display: flex;
+  justify-content: center;
+  align-items: end;
+  margin-left: 5px;
+  margin-top: 10px;
+  width: 100%;
+}
 .tabs button {
-  margin-left: -10px;
-  width: 140px;
+  margin-left: -5px;
+  width: 130px;
   background-color: #b15300;
   color: #f0f0f0;
   padding: 5px;
@@ -27,8 +42,9 @@ h2 {
   position: relative;
 }
 .tabs button.configTab {
-  width: 50px;
-  z-index: 1;
+  width: 40px;
+  height: 28px;
+  z-index: 0;
   padding: 5px;
 }
 
@@ -43,13 +59,15 @@ h2 {
 .excelTab {
   z-index: 3;
 }
-.scheduleTab {
+.npdTab {
   z-index: 2;
+}
+.scheduleTab {
+  z-index: 1;
 }
 .tabcontent {
   display: none;
 }
-/* ---- end tabs ------ */
 .container {
   margin-top: 10px;
   width: 90%;
@@ -60,9 +78,11 @@ h2 {
   border-radius: 10px;
   flex: 1;
 }
+/* ---- end tabs ------ */
+/* --- config --- */
 .config {
   margin-top: 15px;
-  width: 300px;
+  width: 90%;
   flex-direction: column;
   padding: 10px 20px;
   gap: 10px;
@@ -70,24 +90,65 @@ h2 {
   box-shadow: 0 0px 10px rgba(0, 0, 0, 0.7);
 }
 .configBtn {
-  margin-top: 10px;
+  margin-top: 20px;
+  margin-bottom: 10px;
   color: #f0f0f0;
   border-radius: 5px;
   border: none;
   padding: 8px;
   font-size: medium;
   background-color: rgb(21, 83, 217);
+  cursor: pointer;
 }
 .configBtn:hover {
   background-color: rgb(11, 42, 109);
 }
-.w300 {
-  width: 300px;
-  display: flex;
-  justify-content: space-between;
+.config p {
+  text-align: center;
+  font-weight: 600;
+  font-size: small;
+  margin-top: 5px;
+  margin-bottom: 10px;
+  padding: 0;
 }
-.wFull {
-  width: 95%;
+.config span {
+  font-weight: 300;
+  font-size: x-large;
+  margin: 0 5px;
+}
+
+.credLine {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  margin-bottom: 10px;
+}
+.credLine input {
+  width: 150px;
+}
+
+.line {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+  width: 100%;
+}
+.line label {
+  width: 250px;
+}
+.line button {
+  padding: 5px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background-color: #6a6968;
+  color: #f0f0f0;
+  cursor: pointer;
+}
+.line button:hover {
+  background-color: rgb(60, 59, 59);
 }
 input {
   border: 1px solid #ccc;
@@ -98,9 +159,10 @@ input {
 pre {
   background: #f0f0f0;
   padding: 10px;
-  height: 150px;
+  height: 200px;
   width: 90%;
   border-radius: 10px;
+  border-bottom-right-radius: 0;
   color: #000;
   box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5);
   overflow-y: auto;
@@ -117,8 +179,8 @@ pre::-webkit-scrollbar {
 /* ---- schedule ---- */
 .preSchedule {
   height: 60px;
-  width: 90%;
-  margin: auto;
+  width: 97%;
+  margin: 0;
 }
 hr {
   border: 0;
@@ -127,37 +189,176 @@ hr {
   width: 90%;
   margin: 5px auto;
 }
-#schedule p {
-  text-align: center;
-  font-size: medium;
-  margin: 0;
-  padding: 0;
-}
-
 .schedulebtn {
   margin: auto;
+  margin-top: 10px;
   color: #f0f0f0;
   border-radius: 5px;
   border: none;
   padding: 8px;
   font-size: medium;
   width: 40%;
+  cursor: pointer;
   background-color: rgb(1, 106, 49);
 }
 .schedulebtn:hover {
   background-color: rgb(1, 71, 32);
 }
 .schedulecancel {
-  margin: auto;
   color: #f0f0f0;
   border-radius: 5px;
+  border-top-right-radius: 0;
   border: none;
-  padding: 8px;
-  font-size: medium;
+  padding: 7px;
+  font-size: small;
   background-color: #b15300;
-  width: 40%;
+  margin-right: -5px;
+  width: fit-content;
+  align-self: flex-end;
+  cursor: pointer;
 }
 .schedulecancel:hover {
   background-color: rgb(185, 18, 18);
 }
+#schedule label:nth-child(1) {
+  display: flex;
+  align-items: center;
+  margin-left: 5px;
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+#schedule [type="checkbox"] {
+  margin-left: 40px;
+}
+#schedule p {
+  font-weight: 300;
+  padding: 0;
+  margin: 0;
+  font-size: small;
+  text-align: left;
+}
+#schedule .scheduleline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+  width: 100%;
+}
 /* ---- end schedule ---- */
+
+/* circana pivot */
+#Circan-Pivot button {
+  margin: 5px;
+  padding: 8px;
+  border: none;
+  border-radius: 5px;
+  color: #f0f0f0;
+  cursor: pointer;
+}
+#Circan-Pivot {
+  margin-top: 20px;
+}
+
+#Circan-Pivot button:nth-child(1) {
+  background-color: rgb(1, 106, 49);
+}
+#Circan-Pivot button:nth-child(1):hover {
+  background-color: rgb(1, 71, 32);
+}
+#Circan-Pivot button:nth-child(2) {
+  background-color: #b15300;
+}
+#Circan-Pivot button:nth-child(2):hover {
+  background-color: rgb(185, 18, 18);
+}
+#Circan-Pivot div {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 10px;
+  font-size: medium;
+}
+#CircanaTime {
+  font-weight: 300;
+  font-size: large;
+  margin-left: 5px;
+}
+/* ---- end circana pivot ---- */
+/* NPD */
+#npd button {
+  margin: 5px;
+  padding: 8px;
+  border: none;
+  border-radius: 5px;
+  color: #f0f0f0;
+  cursor: pointer;
+}
+#npd {
+  margin-top: 20px;
+}
+
+#npd button:nth-child(1) {
+  background-color: rgb(1, 106, 49);
+}
+#npd button:nth-child(1):hover {
+  background-color: rgb(1, 71, 32);
+}
+#npd button:nth-child(2) {
+  background-color: #b15300;
+}
+#npd button:nth-child(2):hover {
+  background-color: rgb(185, 18, 18);
+}
+#npd div {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 10px;
+  font-size: medium;
+}
+#npdTime {
+  font-weight: 300;
+  font-size: large;
+  margin-left: 5px;
+}
+/* ---- end NPD ---- */
+
+/* Circana-Dashboard */
+#Circana-Dashboard {
+  margin-top: 20px;
+}
+#Circana-Dashboard button {
+  margin-top: 20px;
+  padding: 8px;
+  border: none;
+  border-radius: 5px;
+  color: #f0f0f0;
+  cursor: pointer;
+  background-color: rgb(1, 106, 49);
+}
+#Circana-Dashboard button:hover {
+  background-color: rgb(1, 71, 32);
+}
+#Circana-Dashboard label {
+  font-weight: 300;
+  font-size: small;
+}
+/* end Circana-Dashboard */
+#clearLog {
+  color: #f0f0f0;
+  border-radius: 5px;
+  border-top-right-radius: 0;
+  border: none;
+  font-size: small;
+  background-color: #b15300;
+  width: fit-content;
+  align-self: flex-end;
+  margin-right: 17px;
+  margin-top: -9px;
+  cursor: pointer;
+}
+#clearLog:hover {
+  background-color: rgb(247, 145, 77);
+}

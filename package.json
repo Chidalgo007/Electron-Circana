@@ -1,22 +1,51 @@
 {
-  "name": "electroncircana",
-  "version": "1.0.0",
+  "name": "circana-app",
+  "version": "1.4.1",
   "main": "main.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "electron ."
+    "start": "electron .",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder",
+    "build-my-app": "CircanaApp"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "description": "",
   "devDependencies": {
-    "electron": "^37.3.1"
+    "electron": "^37.3.1",
+    "electron-builder": "^26.0.12"
   },
   "dependencies": {
     "cross-spawn": "^7.0.6",
     "electron-store": "^10.1.0",
     "keytar": "^7.9.0",
-    "puppeteer": "^24.17.0"
+    "playwright-core": "^1.55.0"
+  },
+  "build": {
+    "productName": "Circana Automation",
+    "files": [
+      "python/**/*",
+      "automation/**/*",
+      "renderer/**/*",
+      "src/**/*",
+      "config.js",
+      "main.js",
+      "preload.js",
+      "secureStore.js",
+      "node_modules/playwright-core/**/*",
+      "node_modules/electron-store/**/*",
+      "node_modules/keytar/**/*",
+      "node_modules/cross-spawn/**/*"
+    ],
+    "asarUnpack": [
+      "python/**/*",
+      "automation/**/*",
+      "node_modules/playwright-core/**/*"
+    ],
+    "win": {
+      "target": "portable"
+    }
   }
 }

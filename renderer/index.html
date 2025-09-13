@@ -2,25 +2,26 @@
 <html>
   <head>
     <meta charset="UTF-8" />
-    <title>Automation Tool</title>
+    <title>Circana Automation</title>
     <link rel="stylesheet" href="../src/styles.css" />
   </head>
   <body>
     <div class="tabs">
       <button
         class="dashTab"
-        tabid="Circana Dashboard"
-        onclick="openTab('Circana Dashboard')"
+        tabid="Circana-Dashboard"
+        onclick="openTab('Circana-Dashboard')"
       >
         Circana Dashboard
       </button>
       <button
         class="excelTab"
-        tabid="Circan Pivot"
-        onclick="openTab('Circan Pivot')"
+        tabid="Circan-Pivot"
+        onclick="openTab('Circan-Pivot')"
       >
         Circana Pivot
       </button>
+      <button class="npdTab" tabid="npd" onclick="openTab('npd')">NPD</button>
       <button
         class="scheduleTab"
         tabid="schedule"
@@ -38,50 +39,63 @@
       </button>
     </div>
     <!-- circana Dashboard tab -->
-    <div id="Circana Dashboard" class="tabcontent container">
-      <h2>Circana Dashboard</h2>
+    <div id="Circana-Dashboard" class="tabcontent container">
       <!-- checkbox to run excel after automation -->
       <label>
-        <input type="checkbox" id="linkProcess" /> Run "Circana Pivot" After
-        Automation
+        <input type="checkbox" id="linkProcess" /> Run
+        <strong>"Circana Pivot"</strong> once the file has been successfully
+        downloaded.
       </label>
-      <button onclick="runAutomation()">Run Circana Dashboard</button>
+      <button onclick="runAutomation()">Run Circana-Dashboard</button>
     </div>
 
     <!-- circan pivot tab -->
-    <div id="Circan Pivot" class="tabcontent container">
-      <h3>Excel Processing</h3>
+    <div id="Circan-Pivot" class="tabcontent container">
       <button onclick="runExcel()">Run Circana Pivot Only</button>
       <button onclick="stopCircanaPivot()">🛑 Stop Circana Pivot</button>
+      <div>Time:&nbsp; <span id="circanaTime">--:--:--</span></div>
+    </div>
+
+    <!-- NPD tab -->
+    <div id="npd" class="tabcontent container">
+      <button onclick="runNPD()">Run NPD Only</button>
+      <button onclick="stopNPD()">🛑 Stop NPD</button>
+      <div>Time: <span id="npdTime">--:--:--</span></div>
     </div>
 
     <!-- config tab -->
     <div id="config" class="tabcontent config">
-      <h2>Configuration</h2>
-      <label class="w300"
-        >User:
+      <p>CONFIGURATION</p>
+      <div class="credLine">
+        <label>User: </label>
         <input id="username" type="text" />
-      </label>
-      <label class="w300"
-        >Password:
+        <span> | </span>
+        <label>Password: </label>
         <input id="password" type="password" />
-      </label>
+      </div>
+      <hr />
+      <div class="line">
+        <label>Download Folder: </label>
+        <input id="downloadInput" type="text" />
+        <button id="browseDownload">Browse</button>
+      </div>
 
-      <label class="w300"
-        >Download Folder: <button id="browseDownload">Browse</button>
-      </label>
-      <input id="downloadInput" type="text" class="wFull" />
-
-      <label class="w300"
-        >Destination File Path:
+      <div class="line">
+        <label>Destination File Path: </label>
+        <input id="destinationInput" type="text" />
         <button id="browseDestination">Browse</button>
-      </label>
-      <input id="destinationInput" type="text" class="wFull" />
-      <label class="w300"
-        >Circana Pivot Excel File Path:
+      </div>
+
+      <div class="line">
+        <label>Circana Pivot Excel File Path:</label>
+        <input id="excelInput" type="text" />
         <button id="browseExcel">Browse</button>
-      </label>
-      <input id="excelInput" type="text" class="wFull" />
+      </div>
+      <div class="line">
+        <label>NPD Excel File Path:</label>
+        <input id="npdInput" type="text" />
+        <button id="browseNPD">Browse</button>
+      </div>
 
       <button id="saveConfigBtn" class="configBtn">Save</button>
     </div>
@@ -89,15 +103,25 @@
     <!-- schedule tab -->
     <div id="schedule" class="tabcontent container">
       <!-- make schedule -->
+      <div class="scheduleline">
+        <div>
+          <label
+            >Date:&nbsp;
+            <input type="datetime-local" name="schedule" id="scheduleInput" />
+          </label>
+        </div>
+        <div><input type="checkbox" id="repeatSchedule" /> Weekly Repeat</div>
+      </div>
       <label>
-        Date:
-        <input type="datetime-local" name="schedule" id="scheduleInput" />
-        <input type="checkbox" id="repeatSchedule" /> Weekly Repeat
+        <input type="radio" name="scheduleType" id="scheduleCircanaPivot" />
+        Circana Pivot
       </label>
+
       <label>
         <input type="radio" name="scheduleType" id="scheduleCircanaDashboard" />
-        Circana Dashboard
+        Circana-Dashboard
       </label>
+
       <label>
         <input
           type="radio"
@@ -105,24 +129,21 @@
           id="scheduleCircanaDashboardExcel"
           checked
         />
-        Circana Dashboard & Circana Pivot.
-      </label>
-      <label>
-        <input type="radio" name="scheduleType" id="scheduleCircanaPivot" />
-        Circana Pivot
+        Circana-Dashboard & Circana Pivot.
       </label>
       <button class="schedulebtn" onclick="schedule()">Set Schedule</button>
       <hr />
       <!-- view schedule -->
       <p>Current Schedule</p>
       <pre id="viewSchedule" class="preSchedule"></pre>
-      <button class="schedulecancel" onclick="cancelSchedule()">
+      <button class="schedulecancel" onclick="clearSchedule()">
         Remove Schedules
       </button>
     </div>
 
     <!-- output log box -->
     <pre id="logBox"></pre>
+    <button id="clearLog" onclick="clearLog()">Clear Log</button>
 
     <script src="index.js"></script>
     <script src="renderer.js"></script>

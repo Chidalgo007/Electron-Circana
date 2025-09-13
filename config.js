@@ -1,4 +1,5 @@
-import Store from "electron-store";
+const StoreModule = require("electron-store");
+const Store = StoreModule.default || StoreModule; // handle default export
 
 const store = new Store({
   name: "CircanaDashboard-config", // saved as CircanaDashboard-config.json
@@ -6,7 +7,9 @@ const store = new Store({
     downloadPath: "",
     destinationPath: "",
     excelPath: "",
+    npdPath: "",
+    schedule: [],
   },
 });
 
-export default store;
+module.exports = store;

@@ -5,7 +5,7 @@ npm init -y
 npm install --save-dev electron
 
 # Puppeteer (browser automation)
-npm install puppeteer
+npm install playwright-core
 
 # for windows Credential vault
 npm install keytar
@@ -20,3 +20,14 @@ npm install cross-spawn
 "main": "main.js",
 "scripts": {
   "start": "electron ."
+
+# insatall electron builder
+npm install --save-dev electron-builder
+
+# to built ini
+npx electron-builder --win
+or
+npm run dist
+
+# for any python script run as standlone 
+pyinstaller --onefile --noconsole your_script.py
