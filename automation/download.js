@@ -1,6 +1,7 @@
 const { chromium } = require("playwright-core");
 const fs = require("fs");
 const path = require("path");
+const userDataDir = path.resolve("./edge_profile");
 
 // ---------- Unify Automation ----------
 async function loginUnify(page, { username, password }) {
@@ -373,7 +374,7 @@ async function locateAndAction(
 // ---------- Orchestration ----------
 (async () => {
   console.log("[download.js] == script started == ");
-  const waitAfterExportMs = 2.5 * 60 * 60 * 1000;
+  const waitAfterExportMs = 4 * 60 * 60 * 1000;
   try {
     // browser creation
     const chromePaths = [
@@ -390,7 +391,21 @@ async function locateAndAction(
       throw new Error("Chrome executable not found.");
     }
 
-    const browser = await chromium.launch({
+    // const browser = await chromium.launch({
+    //   headless: false,
+    //   executablePath: chromeExecutable,
+    //   args: [
+    //     "--no-sandbox",
+    //     "--disable-setuid-sandbox",
+    //     "--disable-dev-shm-usage",
+    //     "--disable-accelerated-2d-canvas",
+    //     "--no-first-run",
+    //     "--no-zygote",
+    //   ],
+    // });
+
+    // const page = await browser.newPage();
+    const browser = await chromium.launchPersistentContext(userDataDir, {
       headless: false,
       executablePath: chromeExecutable,
       args: [
@@ -401,9 +416,10 @@ async function locateAndAction(
         "--no-first-run",
         "--no-zygote",
       ],
+      channel: "msedge", // Microsoft Edge
+      acceptDownloads: true,
     });
-
-    const page = await browser.newPage();
+    const page = browser.pages()[0];
     // end browser and page created.
 
     browser.on("disconnected", () => {

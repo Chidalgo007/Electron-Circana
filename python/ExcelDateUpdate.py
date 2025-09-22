@@ -1,6 +1,6 @@
 import os
-import win32com.client as win32
-import pythoncom
+from openpyxl import load_workbook
+import datetime
 import sys
 import io
 
@@ -20,34 +20,22 @@ def force_console_output(message):
 
 # ========== Main Automation Logic ========== #
 def run_excel_updates(destination_folder):
-    pythoncom.CoInitialize()
-
     try:
-        try:
-            excel = win32.GetActiveObject("Excel.Application")
-            force_console_output("Connected to running Excel instance")
-        except Exception:
-            excel = win32.Dispatch("Excel.Application")
-            force_console_output("Created new Excel instance")
-
-        excel.Visible = False
-        excel.DisplayAlerts = False
-        excel.AskToUpdateLinks = False
-        excel.EnableEvents = False
-
         # === Calendar Sheet Update ===
         force_console_output("\n\n=== Updating Calendar Sheet ===")
         calendar_file_path = os.path.join(destination_folder, "Calendar.xlsx")
         if not os.path.exists(calendar_file_path):
             raise FileNotFoundError(f"❌  File not found: {calendar_file_path}")
+
+        wb = load_workbook(calendar_file_path)
+        sheet = wb.active
         
-        wb = excel.Workbooks.Open(calendar_file_path, UpdateLinks=0, ReadOnly=False)
-        sheet = wb.Sheets("Sheet1")
-        date_value = sheet.Range("J5").Value
-        sheet.Range("J1").Value = date_value
-        force_console_output(f"📅  Calendar.xlsx: J1 updated to {date_value}")
-        wb.Save()
-        wb.Close(SaveChanges=True)
+        today = datetime.date.today()
+        sunday = today - datetime.timedelta(days=today.weekday() + 8) # 2 week's back Sunday
+
+        sheet["J1"].value = sunday
+        force_console_output(f"📅  Calendar.xlsx: J1 updated to {sunday}")
+        wb.save(calendar_file_path)
 
         # === Week Sheet Update ===
         force_console_output("\n\n=== Updating Week Sheet ===")
@@ -55,18 +43,23 @@ def run_excel_updates(destination_folder):
         
         if not os.path.exists(week_file_path):
             raise FileNotFoundError(f"❌  File not found: {week_file_path}")
-        wb = excel.Workbooks.Open(week_file_path, UpdateLinks=0, ReadOnly=False)
-        sheet = wb.Sheets("Sheet1")
-        date_value = sheet.Range("P2").Value
-        sheet.Range("A2").Value = date_value
-        force_console_output(f"📅  Weeks.xlsx: A2 updated to {date_value}")
-        wb.Save()
-        wb.Close(SaveChanges=True)
+        wb = load_workbook(week_file_path)
+        sheet = wb.active
 
-    finally:
-        excel.Quit()
+        sheet["A2"].value = sunday
+        force_console_output(f"📅  Weeks.xlsx: A2 updated to {sunday}")
+        wb.save(week_file_path)
+
+        return True
+    except Exception as e:
+        force_console_output(f"❌  Error occurred: {e}")
+        return False
         
 
 if __name__ == "__main__":
+    if len(sys.argv) < 2:
+        sys.exit(1)
+
     file_path = sys.argv[1]
-    run_excel_updates(file_path)
+    success = run_excel_updates(file_path)
+    sys.exit(0 if success else 1)

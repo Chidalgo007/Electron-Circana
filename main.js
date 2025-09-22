@@ -3,12 +3,13 @@ const { spawn, exec, fork } = require("child_process");
 const path = require("path");
 const store = require("./config.js");
 const { saveCredential, getCredential } = require("./secureStore.js");
+const { time } = require("console");
 
-// Disable GPU and cache (fixes "Unable to move cache" errors)
-app.commandLine.appendSwitch("disable-gpu");
-app.commandLine.appendSwitch("disable-software-rasterizer");
-app.commandLine.appendSwitch("disable-gpu-shader-disk-cache");
-app.commandLine.appendSwitch("disable-gpu-program-cache");
+// // Disable GPU and cache (fixes "Unable to move cache" errors)
+// app.commandLine.appendSwitch("disable-gpu");
+// app.commandLine.appendSwitch("disable-software-rasterizer");
+// app.commandLine.appendSwitch("disable-gpu-shader-disk-cache");
+// app.commandLine.appendSwitch("disable-gpu-program-cache");
 
 let mainWindow;
 
@@ -68,7 +69,7 @@ function runPivotExcel(filePath) {
     if (!execPath || !filePath) {
       mainWindow.webContents.send(
         "log",
-        "[ERROR] Missing executable or file path."
+        "[ERROR Circana] Missing executable or file path."
       );
       return reject(new Error("Missing executable or file path."));
     }
@@ -100,12 +101,14 @@ function runPivotExcel(filePath) {
 
     circanaPivot.on("close", (code) => {
       clearInterval(timer); // 🛑 Stop timer
-      if (code === 0)
+      if (code === 0) {
         mainWindow.webContents.send(
           "log",
           "✅ Pivot automation finished successfully."
         );
-      else if (!canceled)
+        const npdPath = store.get("npdPath");
+        runNPDProcess(npdPath); // run NPD after Pivot
+      } else if (!canceled)
         mainWindow.webContents.send(
           "log",
           `❌ Pivot automation failed with code ${code}`
@@ -148,7 +151,7 @@ function runNPDProcess(filePath) {
     if (!execPath || !filePath) {
       mainWindow.webContents.send(
         "log",
-        "[ERROR] Missing executable or file path."
+        "[ERROR NPD] Missing executable or file path."
       );
       return reject(new Error("Missing executable or file path."));
     }
@@ -247,6 +250,106 @@ function runExcelDateUpdate() {
   });
 }
 
+async function automationPartI(event, runExcel) {
+  const downloadPath = store.get("downloadPath");
+  const destinationPath = store.get("destinationPath");
+  const username = await getCredential("circana-username");
+  const password = await getCredential("circana-password");
+
+  if (!downloadPath || !destinationPath || !username || !password) {
+    mainWindow.webContents.send(
+      "log",
+      "[Automation] Missing configuration or credentials!"
+    );
+    return { success: false };
+  }
+
+  const automationPath = app.isPackaged
+    ? path.join(
+        process.resourcesPath,
+        "app.asar.unpacked",
+        "automation",
+        "exportsFiles.js"
+      )
+    : path.join(__dirname, "automation", "exportsFiles.js");
+
+  const automation = fork(
+    automationPath,
+    [downloadPath, destinationPath, username, password],
+    {
+      stdio: "pipe",
+    }
+  );
+
+  automation.stdout.on("data", (data) =>
+    mainWindow.webContents.send("log", `[Automation] ${data.toString()}`)
+  );
+  automation.stderr.on("data", (data) =>
+    mainWindow.webContents.send("log", `[Automation ERROR] ${data.toString()}`)
+  );
+  return new Promise((resolve) => {
+    automation.on("close", (code) => {
+      if (code === 0) {
+        event.reply("automation-done", { success: true });
+        resolve({ success: true });
+      } else {
+        resolve({
+          success: false,
+          reason: "Automation failed or browser closed",
+        });
+      }
+    });
+  });
+}
+
+async function automationPartII(event, runExcel) {
+  const downloadPath = store.get("downloadPath");
+  const destinationPath = store.get("destinationPath");
+  const username = await getCredential("circana-username");
+  const password = await getCredential("circana-password");
+
+  const automationPath = app.isPackaged
+    ? path.join(
+        process.resourcesPath,
+        "app.asar.unpacked",
+        "automation",
+        "downloadFiles.js"
+      )
+    : path.join(__dirname, "automation", "downloadFiles.js");
+
+  const automation = fork(
+    automationPath,
+    [downloadPath, destinationPath, username, password],
+    {
+      stdio: "pipe",
+    }
+  );
+
+  automation.stdout.on("data", (data) =>
+    mainWindow.webContents.send("log", `[Automation] ${data.toString()}`)
+  );
+  automation.stderr.on("data", (data) =>
+    mainWindow.webContents.send("log", `[Automation ERROR] ${data.toString()}`)
+  );
+  return new Promise((resolve) => {
+    automation.on("close", async (code) => {
+      if (code === 0) {
+        event.reply("automation-done", { success: true });
+        if (runExcel) {
+          const excelPath = store.get("excelPath");
+          if (excelPath) await runPivotExcel(excelPath);
+        }
+        resolve({ success: true });
+      } else {
+        resolve({
+          success: false,
+          reason: "Automation failed or browser closed",
+        });
+      }
+    });
+  });
+}
+
 // ================= Schedule Functions =================
 let scheduleTimer = null;
 
@@ -299,11 +402,6 @@ function startScheduler() {
 // Run Pivot Excel
 ipcMain.handle("run-excel", () => {
   const excelPath = store.get("excelPath");
-  if (!excelPath)
-    return mainWindow.webContents.send(
-      "log",
-      "[Pivot] No Excel path configured!"
-    );
   runPivotExcel(excelPath);
 });
 
@@ -321,14 +419,10 @@ ipcMain.handle("stop-automation", () => {
   circanaPivot = null;
   mainWindow.webContents.send("log", "🛑 Automation Circana stopped.");
 });
+
 // Run NPD Excel
 ipcMain.handle("run-npd", () => {
   const npdPath = store.get("npdPath");
-  if (!npdPath)
-    return mainWindow.webContents.send(
-      "log",
-      "[NPD] No Excel path configured!"
-    );
   runNPDProcess(npdPath);
 });
 
@@ -349,71 +443,46 @@ ipcMain.handle("stop-npd", () => {
   NPD = null; // clear process reference
 });
 
-// Run website automation
+// ======== Automation Functions ==============
+// Run website automation part I (export
 ipcMain.handle("run-automation", async (event, { runExcel }) => {
-  const downloadPath = store.get("downloadPath");
-  const destinationPath = store.get("destinationPath");
-  const username = await getCredential("circana-username");
-  const password = await getCredential("circana-password");
+  const result = await automationPartI(event);
+  if (result.success) {
+    // Schedule Part II after 4 hours
+    part2Timer = setTimeout(() => {
+      startPart2Automation(event, runExcel);
+    }, 4 * 60 * 60 * 1000); // 4 hours
+  }
+  return result;
+});
 
-  if (!downloadPath || !destinationPath || !username || !password) {
-    mainWindow.webContents.send(
-      "log",
-      "[Automation] Missing configuration or credentials!"
-    );
-    return { success: false };
+// IPC for Part II
+ipcMain.handle("run-automation-part2", async (event, { runExcel }) => {
+  return startPart2Automation(event, runExcel);
+});
+
+// Run website automation part II (download files, move files, run excel date update)
+async function startPart2Automation(event, runExcel) {
+  const result = await automationPartII(event, runExcel);
+  if (!result.success) {
+    // Retry every hour until success
+    part2RetryInterval = setInterval(async () => {
+      const retryResult = await automationPartII(event, runExcel);
+      if (retryResult.success) {
+        clearInterval(part2RetryInterval);
+        event.reply("run-automation-part2", { success: true });
+        runExcelDateUpdate();
+      }
+    }, 60 * 60 * 1000); // every hour
+  } else {
+    event.reply("run-automation-part2", { success: true });
+    runExcelDateUpdate();
   }
 
-  const automationPath = app.isPackaged
-    ? path.join(
-        process.resourcesPath,
-        "app.asar.unpacked",
-        "automation",
-        "download.js"
-      )
-    : path.join(__dirname, "automation", "download.js");
+  return result;
+}
 
-  const automation = fork(
-    automationPath,
-    [downloadPath, destinationPath, username, password],
-    {
-      stdio: "pipe",
-    }
-  );
-
-  automation.stdout.on("data", (data) =>
-    mainWindow.webContents.send("log", `[Automation] ${data.toString()}`)
-  );
-  automation.stderr.on("data", (data) =>
-    mainWindow.webContents.send("log", `[Automation ERROR] ${data.toString()}`)
-  );
-
-  return new Promise((resolve) => {
-    automation.on("close", async (code) => {
-      try {
-        let result;
-        if (code === 0) {
-          event.reply("automation-done", { success: true });
-          if (runExcel) {
-            const excelPath = store.get("excelPath");
-            if (excelPath) await runPivotExcel(excelPath);
-          }
-          await runExcelDateUpdate();
-          result = { success: true };
-        } else if (code === 2) {
-          result = { success: false, reason: "User closed browser" };
-        } else {
-          result = { success: false, reason: "Automation failed" };
-        }
-
-        resolve(result);
-      } catch (err) {
-        console.error("Excel automation failed:", err);
-        resolve({ success: false, error: err.message });
-      }
-    });
-  });
-});
+// ==== end Automation Functions ====
 
 // Config get
 ipcMain.handle("config:get", async () => ({
@@ -458,6 +527,7 @@ ipcMain.handle("schedule:set", async (event, data) => {
   const downloadPath = store.get("downloadPath");
   const destinationPath = store.get("destinationPath");
   const excelPath = store.get("excelPath");
+  const npdPath = store.get("npdPath");
   const username = await getCredential("circana-username");
   const password = await getCredential("circana-password");
 
@@ -465,6 +535,7 @@ ipcMain.handle("schedule:set", async (event, data) => {
     !downloadPath ||
     !destinationPath ||
     !excelPath ||
+    !npdPath ||
     !username ||
     !password
   ) {

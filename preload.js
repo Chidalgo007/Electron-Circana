@@ -9,6 +9,8 @@ contextBridge.exposeInMainWorld("electronAPI", {
   // circana dashboard
   runAutomation: (runExcel) =>
     ipcRenderer.invoke("run-automation", { runExcel }),
+  runAutomationPart2: (runExcel) =>
+    ipcRenderer.invoke("run-automation-part2", { runExcel }),
   // circana pivot
   runExcel: (excelPath) => ipcRenderer.invoke("run-excel", excelPath),
   stopAutomation: () => ipcRenderer.invoke("stop-automation"),

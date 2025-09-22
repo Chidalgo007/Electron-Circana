@@ -8,6 +8,10 @@ function runAutomation() {
   const runExcel = document.getElementById("linkProcess").checked;
   window.electronAPI.runAutomation(runExcel);
 }
+function runAutomationPartII() {
+  const runExcel = document.getElementById("linkProcess").checked;
+  window.electronAPI.runAutomationPart2(runExcel);
+}
 
 function runExcel() {
   const filePath = document.getElementById("excelInput").value;
